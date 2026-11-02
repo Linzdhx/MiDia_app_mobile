@@ -1,0 +1,7 @@
+{
+  "name": "midia",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
