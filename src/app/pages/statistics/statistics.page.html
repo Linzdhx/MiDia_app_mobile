@@ -1,0 +1,110 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Estadísticas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="stats-content">
+
+  @if (estadisticas().total === 0) {
+    <div class="estado-vacio">
+      <div class="vacio-icono">📊</div>
+      <h3>Sin datos aún</h3>
+      <p>Crea tareas para ver tus estadísticas de productividad.</p>
+    </div>
+  } @else {
+    <!-- Tarjetas de métricas principales -->
+    <div class="metricas-grid">
+      <div class="metrica-card total">
+        <div class="metrica-icono">
+          <ion-icon name="list-outline"></ion-icon>
+        </div>
+        <span class="metrica-numero">{{ estadisticas().total }}</span>
+        <span class="metrica-etiqueta">Total</span>
+      </div>
+      <div class="metrica-card completadas">
+        <div class="metrica-icono">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </div>
+        <span class="metrica-numero">{{ estadisticas().completadas }}</span>
+        <span class="metrica-etiqueta">Completadas</span>
+      </div>
+      <div class="metrica-card pendientes">
+        <div class="metrica-icono">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <span class="metrica-numero">{{ estadisticas().pendientes }}</span>
+        <span class="metrica-etiqueta">Pendientes</span>
+      </div>
+    </div>
+
+    <!-- Porcentaje de éxito -->
+    <ion-card class="exito-card">
+      <ion-card-header>
+        <ion-card-title class="card-titulo">
+          <ion-icon name="trending-up-outline"></ion-icon>
+          Tasa de finalización
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="porcentaje-circle-container">
+          <div class="porcentaje-circle" [attr.data-pct]="estadisticas().porcentajeCompletadas">
+            <svg viewBox="0 0 100 100" class="circulo-svg">
+              <circle cx="50" cy="50" r="40" class="circulo-fondo"></circle>
+              <circle cx="50" cy="50" r="40" class="circulo-progreso"
+                [style.stroke-dashoffset]="251.2 - (251.2 * estadisticas().porcentajeCompletadas / 100)">
+              </circle>
+            </svg>
+            <div class="porcentaje-texto">
+              <span class="pct-num">{{ estadisticas().porcentajeCompletadas }}%</span>
+              <span class="pct-label">completado</span>
+            </div>
+          </div>
+        </div>
+        <ion-progress-bar
+          [value]="estadisticas().porcentajeCompletadas / 100"
+          color="primary"
+          class="barra-exito">
+        </ion-progress-bar>
+        <p class="progreso-desc">
+          {{ estadisticas().completadas }} de {{ estadisticas().total }} tareas completadas
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Distribución por categoría -->
+    @if (categoriaEstadisticas().length > 0) {
+      <ion-card class="categorias-card">
+        <ion-card-header>
+          <ion-card-title class="card-titulo">
+            <ion-icon name="list-outline"></ion-icon>
+            Por categoría
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          @for (cat of categoriaEstadisticas(); track cat.etiqueta) {
+            <div class="categoria-row">
+              <div class="categoria-info">
+                <ion-icon [name]="cat.icono" [color]="cat.color" class="cat-icono"></ion-icon>
+                <span class="cat-etiqueta">{{ cat.etiqueta }}</span>
+              </div>
+              <div class="categoria-barra-wrap">
+                <ion-progress-bar
+                  [value]="cat.porcentaje / 100"
+                  [color]="cat.color"
+                  class="cat-barra">
+                </ion-progress-bar>
+              </div>
+              <div class="categoria-nums">
+                <span class="cat-total">{{ cat.total }}</span>
+                <span class="cat-pct">{{ cat.porcentaje }}%</span>
+              </div>
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+  }
+
+  <div class="bottom-padding"></div>
+</ion-content>

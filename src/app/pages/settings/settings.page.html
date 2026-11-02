@@ -1,0 +1,88 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Ajustes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="settings-content">
+
+  <!-- Perfil -->
+  <div class="settings-section-label">Perfil</div>
+  <div class="settings-group">
+    <ion-item class="settings-item">
+      <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+      <ion-label position="stacked">Tu nombre</ion-label>
+      <ion-input
+        [(ngModel)]="nombreTemp"
+        placeholder="¿Cómo te llamas?"
+        clearInput="true"
+        id="input-nombre">
+      </ion-input>
+    </ion-item>
+    <div class="settings-item-action">
+      <ion-button fill="solid" size="small" (click)="guardarNombre()" [disabled]="!nombreTemp.trim()" id="btn-guardar-nombre">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Guardar
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Apariencia -->
+  <div class="settings-section-label">Apariencia</div>
+  <div class="settings-group">
+    <ion-item class="settings-item" button detail="false" (click)="toggleTema()" id="btn-tema">
+      <ion-icon [name]="tema() === 'oscuro' ? 'moon-outline' : 'sunny-outline'" slot="start" [color]="tema() === 'oscuro' ? 'tertiary' : 'warning'"></ion-icon>
+      <ion-label>
+        <h3>Tema</h3>
+        <p>{{ tema() === 'oscuro' ? 'Modo oscuro activo' : 'Modo claro activo' }}</p>
+      </ion-label>
+      <ion-toggle
+        [checked]="tema() === 'oscuro'"
+        (ionChange)="toggleTema()"
+        slot="end"
+        color="tertiary"
+        id="toggle-tema">
+      </ion-toggle>
+    </ion-item>
+  </div>
+
+  <!-- Datos -->
+  <div class="settings-section-label">Datos</div>
+  <div class="settings-group">
+    <ion-item class="settings-item danger-item" button detail="false" (click)="eliminarTodas()" id="btn-eliminar-todo">
+      <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
+      <ion-label>
+        <h3 style="color: var(--ion-color-danger)">Eliminar todas las tareas</h3>
+        <p>Esta acción no se puede deshacer</p>
+      </ion-label>
+    </ion-item>
+  </div>
+
+  <!-- Información de la app -->
+  <div class="settings-section-label">Acerca de</div>
+  <div class="settings-group">
+    <ion-item class="settings-item">
+      <ion-icon name="phone-portrait-outline" slot="start" color="primary"></ion-icon>
+      <ion-label>
+        <h3>Mi Día</h3>
+        <p>Versión {{ version }}</p>
+      </ion-label>
+    </ion-item>
+    <ion-item class="settings-item">
+      <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+      <ion-label>
+        <h3>Tecnología</h3>
+        <p>Ionic · Angular · Capacitor</p>
+      </ion-label>
+    </ion-item>
+    <ion-item class="settings-item">
+      <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+      <ion-label>
+        <h3>Identificador</h3>
+        <p>cl.ejemplo.midia</p>
+      </ion-label>
+    </ion-item>
+  </div>
+
+  <div class="bottom-padding"></div>
+</ion-content>

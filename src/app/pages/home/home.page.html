@@ -1,0 +1,152 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title class="header-title">Mi Día</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+
+  <!-- Saludo -->
+  <div class="saludo-section">
+    <h1 class="saludo-principal">{{ saludoHora }}{{ nombreUsuario() ? ', ' + nombreUsuario() : '' }} 👋</h1>
+    <p class="fecha-actual">{{ fechaFormateada }}</p>
+  </div>
+
+  <!-- Tarjetas de resumen -->
+  <div class="resumen-grid">
+    <div class="resumen-card pendientes">
+      <div class="resumen-icon">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="resumen-info">
+        <span class="resumen-numero">{{ estadisticas().pendientes }}</span>
+        <span class="resumen-etiqueta">Pendientes</span>
+      </div>
+    </div>
+    <div class="resumen-card completadas">
+      <div class="resumen-icon">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </div>
+      <div class="resumen-info">
+        <span class="resumen-numero">{{ estadisticas().completadas }}</span>
+        <span class="resumen-etiqueta">Completadas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progreso diario -->
+  <ion-card class="progreso-card">
+    <ion-card-header>
+      <ion-card-title class="card-titulo">
+        <ion-icon name="trending-up-outline"></ion-icon>
+        Progreso de hoy
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="progreso-porcentaje">
+        <span class="porcentaje-num">{{ estadisticas().porcentajeCompletadas }}%</span>
+        <span class="porcentaje-total">de {{ estadisticas().total }} tareas</span>
+      </div>
+      <ion-progress-bar
+        [value]="estadisticas().porcentajeCompletadas / 100"
+        class="barra-progreso"
+        color="primary">
+      </ion-progress-bar>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Próximas a vencer -->
+  @if (proximasAVencer().length > 0) {
+    <ion-card class="proximas-card">
+      <ion-card-header>
+        <ion-card-title class="card-titulo">
+          <ion-icon name="alert-circle-outline" color="warning"></ion-icon>
+          Próximas a vencer
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-no-padding">
+        <ion-list lines="none">
+          @for (tarea of proximasAVencer(); track tarea.id) {
+            <ion-item class="tarea-item-proxima" button detail="false" (click)="router.navigate(['/tarea', tarea.id, 'editar'])">
+              <ion-label>
+                <p class="tarea-titulo-small">{{ tarea.titulo }}</p>
+                <p class="tarea-fecha-small">
+                  <ion-icon name="calendar-outline"></ion-icon>
+                  {{ tarea.fechaVencimiento | date: 'dd/MM/yyyy' }}
+                </p>
+              </ion-label>
+              <ion-chip slot="end" [color]="colorPrioridad(tarea.prioridad)" class="chip-prioridad-small">
+                {{ etiquetaPrioridad(tarea.prioridad) }}
+              </ion-chip>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Mis tareas de hoy -->
+  <div class="seccion-header">
+    <h2 class="seccion-titulo">Mis tareas de hoy</h2>
+    <ion-button fill="clear" size="small" (click)="navegarTareas()">
+      Ver todas
+      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+    </ion-button>
+  </div>
+
+  @if (tareasHoy().length === 0 && estadisticas().total === 0) {
+    <div class="estado-vacio">
+      <div class="vacio-ilustracion">✅</div>
+      <h3 class="vacio-titulo">¡Sin tareas aún!</h3>
+      <p class="vacio-descripcion">Agrega una nueva tarea para empezar a organizar tu día.</p>
+      <ion-button (click)="navegarCrearTarea()" shape="round">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Crear primera tarea
+      </ion-button>
+    </div>
+  } @else if (tareasHoy().length === 0) {
+    <div class="estado-vacio">
+      <div class="vacio-ilustracion">🎉</div>
+      <h3 class="vacio-titulo">¡No hay tareas para hoy!</h3>
+      <p class="vacio-descripcion">Ve a "Mis tareas" para ver todas tus tareas.</p>
+    </div>
+  } @else {
+    <ion-list lines="none" class="lista-tareas-hoy">
+      @for (tarea of tareasHoy(); track tarea.id) {
+        <ion-card class="tarea-card" [class.completada]="tarea.estado === 'completada'" [class.vencida]="estaVencida(tarea)">
+          <ion-card-content>
+            <div class="tarea-row">
+              <div class="tarea-check" (click)="toggleCompletada(tarea, $event)">
+                <div class="check-circle" [class.checked]="tarea.estado === 'completada'">
+                  @if (tarea.estado === 'completada') {
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                  } @else {
+                    <div class="check-empty"></div>
+                  }
+                </div>
+              </div>
+              <div class="tarea-info" (click)="router.navigate(['/tarea', tarea.id, 'editar'])">
+                <p class="tarea-titulo" [class.tachada]="tarea.estado === 'completada'">{{ tarea.titulo }}</p>
+                @if (tarea.descripcion) {
+                  <p class="tarea-desc">{{ tarea.descripcion }}</p>
+                }
+                <div class="tarea-chips">
+                  <ion-chip class="chip-categoria">{{ etiquetaCategoria(tarea.categoria) }}</ion-chip>
+                  <ion-chip [color]="colorPrioridad(tarea.prioridad)">{{ etiquetaPrioridad(tarea.prioridad) }}</ion-chip>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    </ion-list>
+  }
+
+  <div class="bottom-padding"></div>
+</ion-content>
+
+<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button (click)="navegarCrearTarea()" color="primary" id="fab-crear-tarea">
+    <ion-icon name="add-outline"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

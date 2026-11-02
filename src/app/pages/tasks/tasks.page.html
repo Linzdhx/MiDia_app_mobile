@@ -1,0 +1,168 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Mis tareas</ion-title>
+    <ion-button slot="end" fill="clear" color="light" (click)="toggleFiltros()" id="btn-filtros">
+      <ion-icon name="filter-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="tasks-content">
+
+  <!-- Buscador -->
+  <ion-searchbar
+    [value]="busqueda()"
+    (ionInput)="onBusqueda($event)"
+    placeholder="Buscar tareas..."
+    class="search-bar"
+    debounce="200">
+  </ion-searchbar>
+
+  <!-- Segmento de estado -->
+  <ion-segment [value]="filtroEstado()" (ionChange)="onFiltroEstado($event.detail.value + '')" class="estado-segment">
+    <ion-segment-button value="todas">
+      <ion-label>Todas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="pendiente">
+      <ion-label>Pendientes</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="completada">
+      <ion-label>Completadas</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Panel de filtros avanzados -->
+  @if (mostrarFiltros()) {
+    <div class="filtros-panel">
+      <div class="filtros-row">
+        <ion-select
+          [value]="filtroCategoria()"
+          (ionChange)="filtroCategoria.set($event.detail.value)"
+          placeholder="Categoría"
+          class="filtro-select"
+          interface="popover"
+          label="Categoría"
+          label-placement="stacked">
+          <ion-select-option value="todas">Todas</ion-select-option>
+          @for (cat of CATEGORIAS; track cat.valor) {
+            <ion-select-option [value]="cat.valor">{{ cat.etiqueta }}</ion-select-option>
+          }
+        </ion-select>
+
+        <ion-select
+          [value]="filtroPrioridad()"
+          (ionChange)="filtroPrioridad.set($event.detail.value)"
+          placeholder="Prioridad"
+          class="filtro-select"
+          interface="popover"
+          label="Prioridad"
+          label-placement="stacked">
+          <ion-select-option value="todas">Todas</ion-select-option>
+          @for (p of PRIORIDADES; track p.valor) {
+            <ion-select-option [value]="p.valor">{{ p.etiqueta }}</ion-select-option>
+          }
+        </ion-select>
+      </div>
+
+      @if (hayFiltrosActivos) {
+        <ion-button fill="clear" size="small" color="danger" (click)="limpiarFiltros()">
+          Limpiar filtros
+        </ion-button>
+      }
+    </div>
+  }
+
+  <!-- Contador de resultados -->
+  <div class="resultados-info">
+    <ion-text color="medium">
+      <span class="resultados-num">{{ tareasFiltradas().length }}</span>
+      {{ tareasFiltradas().length === 1 ? 'tarea' : 'tareas' }}
+      @if (hayFiltrosActivos) {
+        <span class="filtros-activos-badge">· filtros activos</span>
+      }
+    </ion-text>
+  </div>
+
+  <!-- Lista de tareas -->
+  @if (tareasFiltradas().length === 0) {
+    <div class="estado-vacio">
+      <div class="vacio-icono">📋</div>
+      <h3>Sin tareas</h3>
+      <p>{{ hayFiltrosActivos ? 'Prueba con otros filtros.' : 'Crea tu primera tarea usando el botón +' }}</p>
+      @if (!hayFiltrosActivos) {
+        <ion-button (click)="nuevaTarea()" shape="round">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Nueva tarea
+        </ion-button>
+      }
+    </div>
+  } @else {
+    <ion-list lines="none" class="tareas-lista">
+      @for (tarea of tareasFiltradas(); track tarea.id) {
+        <ion-item-sliding #slidingItem>
+          <!-- Acciones a la izquierda: completar -->
+          <ion-item-options side="start">
+            <ion-item-option
+              [color]="tarea.estado === 'completada' ? 'warning' : 'success'"
+              (click)="toggleCompletada(tarea, slidingItem)"
+              expandable>
+              <ion-icon slot="icon-only" [name]="tarea.estado === 'completada' ? 'time-outline' : 'checkmark-circle-outline'"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+
+          <!-- Ítem principal -->
+          <ion-item
+            button
+            detail="false"
+            (click)="editarTarea(tarea)"
+            class="tarea-item"
+            [class.completada]="tarea.estado === 'completada'"
+            [class.vencida]="estaVencida(tarea)">
+            <div slot="start" class="prioridad-indicador" [attr.data-prioridad]="tarea.prioridad"></div>
+            <ion-label class="tarea-label">
+              <div class="tarea-header-row">
+                <h2 class="tarea-titulo" [class.tachada]="tarea.estado === 'completada'">{{ tarea.titulo }}</h2>
+                @if (tarea.estado === 'completada') {
+                  <ion-icon name="checkmark-circle-outline" color="success" class="completada-icon"></ion-icon>
+                }
+              </div>
+              @if (tarea.descripcion) {
+                <p class="tarea-desc">{{ tarea.descripcion }}</p>
+              }
+              <div class="tarea-meta">
+                <ion-chip class="chip-cat">{{ etiquetaCategoria(tarea.categoria) }}</ion-chip>
+                <ion-chip [color]="colorPrioridad(tarea.prioridad)" class="chip-pri">
+                  {{ etiquetaPrioridad(tarea.prioridad) }}
+                </ion-chip>
+                @if (tarea.fechaVencimiento) {
+                  <span class="fecha-chip" [class.vencida-text]="estaVencida(tarea)">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    {{ tarea.fechaVencimiento | date: 'dd/MM/yy' }}
+                  </span>
+                }
+              </div>
+            </ion-label>
+          </ion-item>
+
+          <!-- Acciones a la derecha: editar y eliminar -->
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="editarTarea(tarea); slidingItem.close()">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-item-option>
+            <ion-item-option color="danger" (click)="eliminarTarea(tarea, slidingItem)" expandable>
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  <div class="bottom-padding"></div>
+</ion-content>
+
+<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button (click)="nuevaTarea()" color="primary" id="fab-nueva-tarea-lista">
+    <ion-icon name="add-outline"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

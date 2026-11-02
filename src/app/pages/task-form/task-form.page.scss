@@ -1,0 +1,101 @@
+.form-content {
+  --background: var(--ion-color-light);
+}
+
+.form-section {
+  background: var(--ion-background-color, white);
+  border-radius: 16px;
+  margin: 16px 16px 0;
+  padding: 8px 0 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ion-color-primary);
+  padding: 8px 16px 4px;
+  margin: 0;
+}
+
+.form-item {
+  --background: transparent;
+  --border-color: var(--ion-color-light-shade);
+  --highlight-color-focused: var(--ion-color-primary);
+  --padding-start: 16px;
+}
+
+.item-error {
+  --highlight-color-focused: var(--ion-color-danger);
+  --border-color: var(--ion-color-danger);
+}
+
+.error-note {
+  padding: 4px 16px 8px;
+  font-size: 0.78rem;
+  display: block;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  padding: 2px 16px 4px;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+}
+
+.required {
+  color: var(--ion-color-danger);
+}
+
+/* Selector visual de prioridad */
+.prioridad-preview {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px 12px;
+}
+
+.prioridad-opcion {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 2px solid var(--ion-color-light-shade);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--ion-color-medium);
+
+  &.activa {
+    color: white;
+
+    &[data-color="success"] { background: var(--ion-color-success); border-color: var(--ion-color-success); }
+    &[data-color="warning"] { background: var(--ion-color-warning); border-color: var(--ion-color-warning); color: var(--ion-color-dark); }
+    &[data-color="danger"]  { background: var(--ion-color-danger);  border-color: var(--ion-color-danger);  }
+  }
+}
+
+.limpiar-fecha-btn {
+  padding: 0 12px;
+}
+
+/* Acciones del formulario */
+.form-actions {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-guardar {
+  --border-radius: 14px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.btn-cancelar {
+  --border-radius: 14px;
+}

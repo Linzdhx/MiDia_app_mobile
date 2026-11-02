@@ -1,0 +1,151 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancelar()" fill="clear" color="light" id="btn-cancelar-form">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ modoEdicion ? 'Editar tarea' : 'Nueva tarea' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" fill="clear" color="light" [disabled]="form.invalid" id="btn-guardar-form">
+        <ion-icon name="save-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="form-content">
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+
+    <!-- Título -->
+    <div class="form-section">
+      <h3 class="section-label">Información básica</h3>
+
+      <ion-item class="form-item" [class.item-error]="titulo.invalid && titulo.touched">
+        <ion-label position="stacked">Título <span class="required">*</span></ion-label>
+        <ion-input
+          formControlName="titulo"
+          placeholder="Escribe el título de la tarea"
+          maxlength="100"
+          id="input-titulo">
+        </ion-input>
+      </ion-item>
+      @if (titulo.invalid && titulo.touched) {
+        <ion-note color="danger" class="error-note">
+          @if (titulo.errors?.['required']) { El título es obligatorio. }
+          @else if (titulo.errors?.['maxlength']) { Máximo 100 caracteres. }
+        </ion-note>
+      }
+
+      <ion-item class="form-item">
+        <ion-label position="stacked">Descripción</ion-label>
+        <ion-textarea
+          formControlName="descripcion"
+          placeholder="Descripción opcional..."
+          rows="3"
+          maxlength="500"
+          id="input-descripcion">
+        </ion-textarea>
+      </ion-item>
+      @if (descripcion.value?.length > 400) {
+        <ion-note class="char-count">{{ descripcion.value?.length }}/500</ion-note>
+      }
+    </div>
+
+    <!-- Categoría y Prioridad -->
+    <div class="form-section">
+      <h3 class="section-label">Clasificación</h3>
+
+      <ion-item class="form-item">
+        <ion-label position="stacked">Categoría</ion-label>
+        <ion-select formControlName="categoria" interface="popover" id="select-categoria">
+          @for (cat of CATEGORIAS; track cat.valor) {
+            <ion-select-option [value]="cat.valor">
+              {{ cat.etiqueta }}
+            </ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item class="form-item">
+        <ion-label position="stacked">Prioridad</ion-label>
+        <ion-select formControlName="prioridad" interface="popover" id="select-prioridad">
+          @for (p of PRIORIDADES; track p.valor) {
+            <ion-select-option [value]="p.valor">{{ p.etiqueta }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <!-- Indicador visual de prioridad seleccionada -->
+      <div class="prioridad-preview">
+        @for (p of PRIORIDADES; track p.valor) {
+          <div
+            class="prioridad-opcion"
+            [class.activa]="form.value.prioridad === p.valor"
+            [attr.data-color]="p.color"
+            (click)="form.patchValue({ prioridad: p.valor })">
+            {{ p.etiqueta }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Fecha de vencimiento -->
+    <div class="form-section">
+      <h3 class="section-label">Fecha de vencimiento</h3>
+
+      <ion-item class="form-item">
+        <ion-label position="stacked">Vence el</ion-label>
+        <ion-input
+          [value]="form.value.fechaVencimiento ? (form.value.fechaVencimiento | slice:0:10) : ''"
+          placeholder="Selecciona una fecha"
+          readonly
+          id="input-fecha-display">
+        </ion-input>
+        <ion-datetime-button datetime="picker-fecha" slot="end"></ion-datetime-button>
+      </ion-item>
+
+      @if (form.value.fechaVencimiento) {
+        <ion-button fill="clear" color="danger" size="small" (click)="limpiarFecha()" class="limpiar-fecha-btn">
+          <ion-icon name="close-outline" slot="start"></ion-icon>
+          Quitar fecha
+        </ion-button>
+      }
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="picker-fecha"
+            presentation="date"
+            [min]="hoy"
+            locale="es-ES"
+            (ionChange)="onFechaChange($event)">
+          </ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+
+    <!-- Botón guardar -->
+    <div class="form-actions">
+      <ion-button
+        expand="block"
+        (click)="guardar()"
+        class="btn-guardar"
+        [disabled]="form.invalid"
+        id="btn-guardar-principal">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ modoEdicion ? 'Actualizar tarea' : 'Crear tarea' }}
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="cancelar()"
+        class="btn-cancelar">
+        Cancelar
+      </ion-button>
+    </div>
+
+  </form>
+</ion-content>

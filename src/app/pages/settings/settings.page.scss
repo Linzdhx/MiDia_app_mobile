@@ -1,0 +1,50 @@
+.settings-content {
+  --background: var(--ion-color-light);
+}
+
+.settings-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ion-color-primary);
+  padding: 20px 20px 6px;
+}
+
+.settings-group {
+  background: var(--ion-background-color, white);
+  border-radius: 16px;
+  margin: 0 16px 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.settings-item {
+  --background: transparent;
+  --border-color: var(--ion-color-light-shade);
+  --padding-start: 16px;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+
+  &.danger-item {
+    --ripple-color: var(--ion-color-danger-tint);
+  }
+}
+
+.settings-item-action {
+  padding: 8px 16px 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bottom-padding {
+  height: 80px;
+}

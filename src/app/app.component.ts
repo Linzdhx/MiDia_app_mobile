@@ -1,11 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { IonApp, IonRouterOutlet } from '@ionic/angular';
+import { TareasService } from './core/services/tareas.service';
+import { ConfiguracionService } from './core/services/configuracion.service';
 
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
-  standalone: false,
+  template: `
+    <ion-app>
+      <ion-router-outlet></ion-router-outlet>
+    </ion-app>
+  `,
+  standalone: true,
+  imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent {
-  constructor() {}
+export class AppComponent implements OnInit {
+  constructor(
+    private tareasService: TareasService,
+    private configuracionService: ConfiguracionService,
+  ) {}
+
+  async ngOnInit(): Promise<void> {
+    await Promise.all([
+      this.configuracionService.inicializar(),
+      this.tareasService.inicializar(),
+    ]);
+  }
 }

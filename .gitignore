@@ -1,40 +1,102 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
+# =============================================================================
+# .gitignore — Mi Día (Ionic + Angular + Capacitor)
+# =============================================================================
 
+# ── Archivos temporales del sistema ──────────────────────────────────────────
 *~
 *.sw[mnpcod]
 .tmp
 *.tmp
 *.tmp.*
-UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
+.DS_Store
+Thumbs.db
+desktop.ini
 
+# ── Logs ──────────────────────────────────────────────────────────────────────
 *.log
 log.txt
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
 
+# ── Node.js ───────────────────────────────────────────────────────────────────
+/node_modules
 
-/.sourcemaps
-/.versions
-/coverage
+# ── Variables de entorno y configuracion sensible ────────────────────────────
+.env
+.env.*
+!.env.example
 
-# Ionic
-/.ionic
+# ── Compilacion web (Ionic/Angular) ──────────────────────────────────────────
+# El directorio www se regenera con 'npm run build'
 /www
-/platforms
-/plugins
-
-# Compiled output
 /dist
 /tmp
 /out-tsc
 /bazel-out
+/.sourcemaps
+/.versions
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# ── Angular ───────────────────────────────────────────────────────────────────
+/.angular
+/.angular/cache
+.sass-cache/
+/.nx
+/.nx/cache
+/coverage
+/typings
+/connect.lock
+testem.log
+/libpeerconnection.log
 
-# IDEs and editors
+# ── Ionic ─────────────────────────────────────────────────────────────────────
+/.ionic
+
+# NOTA: Las carpetas 'android' e 'ios' generadas por Capacitor SE VERSIONAN
+# para que el Mac pueda hacer 'cap sync ios' directamente desde el repo
+# sin necesidad de 'cap add ios'. Solo se excluyen los artefactos de build.
+
+# ── Android: artefactos de compilacion (NO toda la carpeta android/) ─────────
+/android/.gradle
+/android/app/build
+/android/build
+/android/captures
+/android/.idea
+/android/local.properties
+*.apk
+*.aab
+
+# ── Xcode / iOS: artefactos de compilacion (NO toda la carpeta ios/) ─────────
+/ios/App/Pods
+/ios/App/DerivedData
+/ios/App/*.xcworkspace/xcuserdata
+/ios/App/*.xcodeproj/xcuserdata
+/ios/App/*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcuserstate
+UserInterfaceState.xcuserstate
+
+# ── Certificados y claves de firma (NUNCA subir al repositorio) ──────────────
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.cer
+*.pem
+*.key
+*.p8
+*.mobileprovision
+*.provisionprofile
+AuthKey_*.p8
+ExportOptions.plist
+
+# ── Firebase y servicios en la nube ──────────────────────────────────────────
+google-services.json
+GoogleService-Info.plist
+
+# ── IDEs y editores ───────────────────────────────────────────────────────────
 .idea/
 .project
 .classpath
@@ -44,7 +106,7 @@ yarn-error.log
 *.sublime-project
 *.sublime-workspace
 
-# Visual Studio Code
+# Visual Studio Code (se versionan solo los ajustes del proyecto, no personales)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -52,19 +114,10 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-
-# Miscellaneous
-/.angular
-/.angular/cache
-.sass-cache/
-/.nx
-/.nx/cache
-/connect.lock
+# ── Testing ───────────────────────────────────────────────────────────────────
 /coverage
-/libpeerconnection.log
-testem.log
-/typings
 
-# System files
-.DS_Store
-Thumbs.db
+# ── Otros ─────────────────────────────────────────────────────────────────────
+/platforms
+/plugins
+/.bazelrc.user

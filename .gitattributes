@@ -1,0 +1,21 @@
+# Normalización de fin de línea por tipo de archivo
+# Los scripts bash deben tener LF para ejecutarse en macOS/Linux
+scripts/*.sh text eol=lf
+
+# PowerShell usa CRLF en Windows, pero puede tolerar LF
+scripts/*.ps1 text eol=crlf
+
+# Archivos de texto con CRLF en Windows (por defecto)
+*.ts text eol=lf
+*.html text eol=lf
+*.scss text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+# Binarios (no modificar fin de línea)
+*.png binary
+*.jpg binary
+*.ico binary
+*.jar binary
+android/gradlew text eol=lf
