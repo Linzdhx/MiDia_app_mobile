@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=https://codemagic.io/codemagic-schema.json
+# =============================================================================
+# codemagic.yaml — Mi Día: Pipeline CI/CD para compilar iOS en Codemagic (Free Tier)
+# =============================================================================
+# Características del workflow:
+# - Compilación para Simulador iOS (arquitectura x86_64 / arm64)
+# - No requiere cuenta de Apple Developer de pago ni certificados de firma
+# - Compatible con la capa gratuita de Codemagic (máquinas Mac mini M2 con Apple Silicon)
+# - Genera un archivo ZIP descargable con la app compilada (.app)
+# =============================================================================
+
+workflows:
+  ios-simulator-build:
+    name: Mi Día - iOS Simulator Build (Prueba)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      node: 22
+      xcode: latest
+      vars:
+        XCODE_SCHEME: "App"
+
+    cache:
+      cache_paths:
+        - ~/.npm
+        - ~/Library/Caches/org.swift.swiftpm
+
+    # NOTA: Se dejan los triggers automáticos comentados para evitar que se
+    # ejecuten compilaciones automáticas y se consuman minutos sin autorización.
+    # El usuario puede iniciar la compilación manualmente desde el panel de Codemagic:
+    # "Start new build" -> Seleccionar rama -> Elegir este workflow.
+    #
+    # Para habilitar la compilación automática en cada push, descomenta las líneas siguientes:
+    # triggering:
+    #   events:
+    #     - push
+    #   branch_patterns:
+    #     - pattern: main
+    #       include: true
+
+    scripts:
+      - name: Verificar versiones del entorno
+        script: |
+          echo "=== Entorno de ejecución ==="
+          echo "macOS: $(sw_vers -productVersion)"
+          echo "Node.js: $(node --version)"
+          echo "npm: v$(npm --version)"
+          xcodebuild -version
+
+      - name: Instalar dependencias npm
+        script: |
+          npm ci --prefer-offline
+
+      - name: Compilar aplicación web (Angular / Ionic)
+        script: |
+          npm run build
+
+      - name: Preparar plataforma iOS y sincronizar Capacitor
+        script: |
+          # Si la carpeta ios/ no existe, inicializar la plataforma nativa
+          if [ ! -d "ios" ]; then
+            echo "Directorio ios/ no encontrado. Ejecutando npx cap add ios..."
+            npx cap add ios
+          fi
+
+          # Sincronizar assets web compilados y plugins con iOS
+          echo "Sincronizando Capacitor con plataforma iOS..."
+          npx cap sync ios
+
+          # Verificar que el esquema compartido para xcodebuild esté presente
+          SCHEME_PATH="ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme"
+          if [ -f "$SCHEME_PATH" ]; then
+            echo "Esquema compartido verificado: $SCHEME_PATH"
+          else
+            echo "ADVERTENCIA: No se encontró el archivo $SCHEME_PATH"
+          fi
+
+      - name: Compilar app iOS para Simulador (sin firma de pago)
+        script: |
+          DERIVED_DATA_DIR="$CM_BUILD_DIR/build"
+
+          echo "Compilando proyecto nativo con Swift Package Manager (ios/App/App.xcodeproj)..."
+          xcodebuild build \
+            -project ios/App/App.xcodeproj \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            -derivedDataPath "$DERIVED_DATA_DIR" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Empaquetar artefacto para simulador
+        script: |
+          PRODUCTS_DIR="$CM_BUILD_DIR/build/Build/Products/Debug-iphonesimulator"
+          APP_PATH="$PRODUCTS_DIR/App.app"
+
+          if [ -d "$APP_PATH" ]; then
+            echo "Empaquetando App.app en archivo comprimido ZIP..."
+            cd "$PRODUCTS_DIR"
+            zip -r -X "MiDia-iOS-Simulator.zip" "App.app"
+            cd "$CM_BUILD_DIR"
+            echo "Artefacto creado exitosamente en: $PRODUCTS_DIR/MiDia-iOS-Simulator.zip"
+          else
+            echo "ERROR: No se encontró la aplicación compilada en $APP_PATH"
+            exit 1
+          fi
+
+    artifacts:
+      - build/Build/Products/Debug-iphonesimulator/*.zip
+      - build/Build/Products/Debug-iphonesimulator/*.app
