@@ -1,16 +1,16 @@
 # yaml-language-server: $schema=https://codemagic.io/codemagic-schema.json
 # =============================================================================
-# codemagic.yaml — Mi Día: Compilación iOS para simulador
+# codemagic.yaml — Mi Día: Compilación iOS para iPhone físico
 # =============================================================================
-# - Compilación para Simulador iOS.
-# - No requiere certificados de firma ni cuenta Apple Developer de pago.
+# - Compilación para dispositivos iOS físicos.
+# - No utiliza certificados de firma de Apple.
+# - Genera un IPA sin firma para posterior firma de desarrollo.
 # - Compatible con máquinas Mac mini M2 de Codemagic.
-# - Genera un ZIP descargable con la aplicación compilada (.app).
 # =============================================================================
 
 workflows:
-  ios-simulator-build:
-    name: Mi Día - iOS Simulator Build (Prueba)
+  ios-device-build:
+    name: Mi Día - iOS Device Build (Prueba)
     max_build_duration: 60
     instance_type: mac_mini_m2
 
@@ -26,7 +26,6 @@ workflows:
         - ~/Library/Caches/org.swift.swiftpm
 
     # Las compilaciones serán exclusivamente manuales.
-    # No se habilitan triggers automáticos.
 
     scripts:
       - name: Verificar versiones del entorno
@@ -55,49 +54,58 @@ workflows:
           SCHEME_PATH="ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme"
 
           if [ ! -f "$SCHEME_PATH" ]; then
-            echo "ERROR: No se encontró el esquema Xcode: $SCHEME_PATH"
+            echo "ERROR: No se encontró el esquema Xcode."
             exit 1
           fi
 
-          echo "Esquema Xcode verificado correctamente."
-          echo "Sincronizando Capacitor con iOS..."
-
           npx cap sync ios
 
-      - name: Compilar app iOS para simulador
+      - name: Compilar app iOS para iPhone físico
         script: |
           DERIVED_DATA_DIR="$CM_BUILD_DIR/build"
-
-          echo "Compilando proyecto nativo con Swift Package Manager..."
 
           xcodebuild build \
             -project ios/App/App.xcodeproj \
             -scheme "$XCODE_SCHEME" \
-            -sdk iphonesimulator \
-            -destination "generic/platform=iOS Simulator" \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
             -configuration Debug \
             -derivedDataPath "$DERIVED_DATA_DIR" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Empaquetar aplicación para simulador
+      - name: Empaquetar IPA sin firma
         script: |
-          PRODUCTS_DIR="$CM_BUILD_DIR/build/Build/Products/Debug-iphonesimulator"
+          PRODUCTS_DIR="$CM_BUILD_DIR/build/Build/Products/Debug-iphoneos"
           APP_PATH="$PRODUCTS_DIR/App.app"
+          IPA_DIR="$CM_BUILD_DIR/ipa/Payload"
 
-          if [ -d "$APP_PATH" ]; then
-            echo "Empaquetando App.app en ZIP..."
-
-            cd "$PRODUCTS_DIR"
-            zip -r -X "MiDia-iOS-Simulator.zip" "App.app"
-
-            echo "ZIP generado correctamente."
-          else
-            echo "ERROR: No se encontró la aplicación compilada en $APP_PATH"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "ERROR: No se encontró App.app para iPhone."
             exit 1
           fi
 
+          if [ ! -f "$APP_PATH/Info.plist" ]; then
+            echo "ERROR: Falta Info.plist."
+            exit 1
+          fi
+
+          EXECUTABLE=$(/usr/libexec/PlistBuddy -c "Print CFBundleExecutable" "$APP_PATH/Info.plist")
+
+          if [ ! -f "$APP_PATH/$EXECUTABLE" ]; then
+            echo "ERROR: No se encontró el ejecutable de la aplicación."
+            exit 1
+          fi
+
+          mkdir -p "$IPA_DIR"
+          cp -R "$APP_PATH" "$IPA_DIR/"
+
+          cd "$CM_BUILD_DIR/ipa"
+          zip -r -X "MiDia-iPhone-unsigned.ipa" Payload
+
+          echo "IPA sin firma generado correctamente."
+
     artifacts:
-      - build/Build/Products/Debug-iphonesimulator/*.zip
-      - build/Build/Products/Debug-iphonesimulator/*.app
+      - ipa/*.ipa
+
